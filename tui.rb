@@ -38,11 +38,7 @@ class TUI
   end
 
   def yesno_dialog(caption)
-    if choice_dialog(caption, ["Yes", "No"]) == "Yes"
-      true
-    else
-      false
-    end
+    choice_dialog(caption, ["Yes", "No"]) == "Yes"
   end
 
   def refresh
