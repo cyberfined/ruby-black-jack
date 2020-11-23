@@ -127,7 +127,6 @@ class Game
   end
 
   def pass_action(player)
-    @ui.show_message("#{player.name}'s turn")
     true
   end
 
