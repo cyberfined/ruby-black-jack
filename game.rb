@@ -1,6 +1,7 @@
 require_relative("game_actions")
-require_relative("real_player")
+require_relative("player")
 require_relative("dealer")
+require_relative("deck")
 require_relative("card")
 
 class Game
@@ -10,12 +11,11 @@ class Game
 
   def initialize(ui)
     @ui = ui
+    @deck = Deck.new
 
     create_players
     @ui.player = @player
     @ui.dealer = @dealer
-
-    create_deck
 
     # all allowed actions
     @actions = {
@@ -26,54 +26,18 @@ class Game
   end
 
   def game_loop
-    should_end_game = false
-
-    until should_end_game
-      # restore from previous game
-      make_rates
-      @player.cards = generate_cards(2)
-      @dealer.cards = generate_cards(2)
-
-      @ui.should_hide_dealer_info = true
-      @ui.refresh
+    loop do
+      new_game
       
-      cur_player_index = 0
-      @should_end_round = false
-
       # main game loop
       until @should_end_round
-        cur_player = @players[cur_player_index]
-        next_turn(cur_player)
-        @ui.refresh
-
+        player_turn
+        dealer_turn
         check_end_round_condition
-        cur_player_index = 1 - cur_player_index
+        @ui.refresh
       end
 
-      # open cards
-
-      @ui.should_hide_dealer_info = false
-      @ui.refresh
-
-      player_delta = @player.points-21
-      dealer_delta = @dealer.points-21
-
-      if player_delta == dealer_delta
-        caption = "You have a draw, do you want to restart"
-        @player.money += RATE_SIZE
-        @dealer.money += RATE_SIZE
-      else
-        if player_delta <= 0 && dealer_delta <= 0
-          player_delta = player_delta.abs
-          dealer_delta = dealer_delta.abs
-        end
-
-        winner = player_delta < dealer_delta ? @player : @dealer
-        caption = "#{winner.name} won, do you want to restart?"
-        winner.money += BANK_SIZE
-      end
-
-      should_end_game = !@ui.yesno_dialog(caption)
+      break unless summarize_game
     end
 
     @ui.show_message("Goodbye!")
@@ -81,28 +45,47 @@ class Game
 
   private
 
+  def new_game
+    make_rates
+    @player.cards = @deck.get_cards(2)
+    @dealer.cards = @deck.get_cards(2)
+    @ui.should_hide_dealer_info = true
+    @ui.refresh
+    @should_end_round = false
+  end
+
+  def summarize_game
+    @ui.should_hide_dealer_info = false
+    @ui.refresh
+
+    player_delta = @player.points-21
+    dealer_delta = @dealer.points-21
+
+    if player_delta == dealer_delta
+      caption = "You have a draw, do you want to restart"
+      @player.money += RATE_SIZE
+      @dealer.money += RATE_SIZE
+    else
+      if player_delta <= 0 && dealer_delta <= 0
+        player_delta = player_delta.abs
+        dealer_delta = dealer_delta.abs
+      end
+
+      winner = player_delta < dealer_delta ? @player : @dealer
+      caption = "#{winner.name} won, do you want to restart?"
+      winner.money += BANK_SIZE
+    end
+
+    @ui.yesno_dialog(caption)
+  end
+
   def create_players
     player_name = @ui.dialog("Enter your name: ")
-    @player = RealPlayer.new(player_name, START_CAPITAL, @ui)
+    @player = Player.new(player_name, START_CAPITAL)
     @dealer = Dealer.new(START_CAPITAL)
-    @players = [@player, @dealer]
   rescue ArgumentError => e
     puts(e.message.capitalize)
     retry
-  end
-
-  def create_deck
-    suit = ["♠", "♥", "♦", "♣"]
-    faces = ["J", "Q", "K", "A"]
-    @deck = []
-
-    for i in 2..10
-      suit.each {|s| @deck << Card.new(i, s)}
-    end
-
-    faces.each do |f|
-      suit.each {|s| @deck << Card.new(f, s)}
-    end
   end
 
   def make_rates
@@ -113,21 +96,28 @@ class Game
     @dealer.money = START_CAPITAL
   end
 
-  def next_turn(cur_player)
+  def player_turn
     loop do
-      turn = cur_player.next_turn
-      action = @actions[turn]
-      if action == nil
-        @ui.show_message("undefined action #{turn}")
-        next
-      end
-
-      break if action.call(cur_player)
+      turn = @ui.choice_dialog("Your next action is:", GameActions::ACTIONS)
+      break if action_call(@player, turn)
     end
   end
 
+  def dealer_turn
+    turn = @dealer.next_turn
+    action_call(@dealer, turn)
+  end
+
+  def action_call(player, turn)
+    action = @actions[turn]
+    if action == nil
+      @ui.show_message("undefined action #{turn}")
+      return false
+    end
+    action.call(player)
+  end
+
   def pass_action(player)
-    @ui.show_message("#{player.name}'s turn")
     true
   end
 
@@ -137,22 +127,12 @@ class Game
       return false
     end
 
-    player.append_card(generate_card)
+    player.append_card(@deck.get_cards(1)[0])
     true
   end
 
   def open_cards_action(dummy)
     @should_end_round = true
-  end
-
-  def generate_card
-    @deck.sample
-  end
-
-  def generate_cards(num_cards)
-    cards = []
-    num_cards.times {cards << generate_card}
-    cards
   end
 
   def check_end_round_condition
