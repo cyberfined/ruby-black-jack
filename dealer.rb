@@ -7,7 +7,7 @@ class Dealer < Player
   end
 
   def next_turn
-    return GameActions::PASS_ACTION if @points >= 17 || @cards.length > 2
+    return GameActions::PASS_ACTION if points >= 17 || cards.length > 2
     return GameActions::GET_CARD_ACTION
   end
 end
