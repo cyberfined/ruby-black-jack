@@ -5,9 +5,13 @@ require_relative('deck')
 require_relative('card')
 
 class Game
-  RATE_SIZE     = 10
-  BANK_SIZE     = 2 * RATE_SIZE
-  START_CAPITAL = 100
+  RATE_SIZE      = 10
+  BANK_SIZE      = 2 * RATE_SIZE
+  START_CAPITAL  = 100
+  WINNING_POINTS = 21
+  DRAW           = 0
+  PLAYER_WON     = 1
+  DEALER_WON     = 2
 
   def initialize(ui)
     @ui = ui
@@ -58,25 +62,34 @@ class Game
     @ui.should_hide_dealer_info = false
     @ui.refresh
 
-    player_delta = @player.points - 21
-    dealer_delta = @dealer.points - 21
+    result = game_result
 
-    if player_delta == dealer_delta
+    if result == DRAW
       caption = 'You have a draw, do you want to restart'
       @player.money += RATE_SIZE
       @dealer.money += RATE_SIZE
     else
-      if player_delta <= 0 && dealer_delta <= 0
-        player_delta = player_delta.abs
-        dealer_delta = dealer_delta.abs
-      end
-
-      winner = player_delta < dealer_delta ? @player : @dealer
+      winner = result == PLAYER_WON ? @player : @dealer
       caption = "#{winner.name} won, do you want to restart?"
       winner.money += BANK_SIZE
     end
 
     @ui.yesno_dialog(caption)
+  end
+
+  def game_result
+    player_delta = @player.points - WINNING_POINTS
+    dealer_delta = @dealer.points - WINNING_POINTS
+
+    if player_delta <= 0 && dealer_delta <= 0
+      player_delta = player_delta.abs
+      dealer_delta = dealer_delta.abs
+    end
+
+    return DEALER_WON if @player.points > 21 || dealer_delta < player_delta
+    return PLAYER_WON unless player_delta == dealer_delta
+
+    DRAW
   end
 
   def create_players
