@@ -5,7 +5,7 @@ class Player
 
   def initialize(name, money)
     raise ArgumentError, 'name must be non-empty string' if name == ''
-    raise ArgumentError, 'money must be non-negative' if money < 0
+    raise ArgumentError, 'money must be non-negative' if money.negative?
 
     @name = name
     @money = money
@@ -24,12 +24,8 @@ class Player
     @hand.cards = new_cards
   end
 
-  def append_card(card)
-    @hand.append_card(card)
-  end
-
   def money=(new_money)
-    raise ArgumentError, 'money must be non-negative' if new_money < 0
+    raise ArgumentError, 'money must be non-negative' if new_money.negative?
 
     @money = new_money
   end
