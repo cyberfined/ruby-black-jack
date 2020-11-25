@@ -20,14 +20,14 @@ class Hand
 
   def calc_points
     @points = 0
-    @cards.each {|c| @points += card_points(c) unless c.type == "A"}
-    @cards.each {|c| @points += card_points(c) if c.type == "A"}
+    @cards.each { |c| @points += card_points(c) unless c.type == 'A' }
+    @cards.each { |c| @points += card_points(c) if c.type == 'A' }
   end
 
   def card_points(card)
     case card.type
-    when "A"           then (@points + 11 <= 21) ? 11 : 1
-    when "J", "Q", "K" then 10
+    when 'A'           then @points + 11 <= 21 ? 11 : 1
+    when 'J', 'Q', 'K' then 10
     else               card.type.to_i
     end
   end

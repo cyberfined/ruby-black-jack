@@ -1,6 +1,5 @@
 class TUI
-  attr_writer :player
-  attr_writer :dealer, :should_hide_dealer_info
+  attr_writer :player, :dealer, :should_hide_dealer_info
 
   def initialize
     @should_hide_dealer_info = true
@@ -18,11 +17,11 @@ class TUI
   def choice_dialog(caption, choices)
     loop do
       puts(caption)
-      choices.each_with_index {|c,i| puts "#{i+1}) #{c}"}
+      choices.each_with_index { |c, i| puts "#{i + 1}) #{c}" }
 
       begin
         index = Integer($stdin.gets.chomp)
-      rescue
+      rescue StandardError
         print("\nWrong input\n\n")
         next
       end
@@ -38,7 +37,7 @@ class TUI
   end
 
   def yesno_dialog(caption)
-    choice_dialog(caption, ["Yes", "No"]) == "Yes"
+    choice_dialog(caption, %w[Yes No]) == 'Yes'
   end
 
   def refresh
@@ -46,11 +45,11 @@ class TUI
       str_dealer_cards = '*' * @dealer.cards.length
       str_dealer_points = '*'
     else
-      str_dealer_cards = @dealer.cards.join(", ")
+      str_dealer_cards = @dealer.cards.join(', ')
       str_dealer_points = @dealer.points.to_s
     end
 
-    str_player_cards = @player.cards.join(", ")
+    str_player_cards = @player.cards.join(', ')
     player_info = "Your cards: #{str_player_cards} | " \
                   "your points: #{@player.points} | " \
                   "your money: #{@player.money}"

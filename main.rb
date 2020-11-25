@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
-require_relative("game")
-require_relative("tui")
+require_relative('game')
+require_relative('tui')
 
 tui = TUI.new
 game = Game.new(tui)

@@ -1,11 +1,11 @@
-require_relative("hand")
+require_relative('hand')
 
 class Player
   attr_reader :name, :money
 
   def initialize(name, money)
-    raise ArgumentError, "name must be non-empty string" if name == ""
-    raise ArgumentError, "money must be non-negative" if money < 0
+    raise ArgumentError, 'name must be non-empty string' if name == ''
+    raise ArgumentError, 'money must be non-negative' if money < 0
 
     @name = name
     @money = money
@@ -29,7 +29,8 @@ class Player
   end
 
   def money=(new_money)
-    raise ArgumentError, "money must be non-negative" if new_money < 0
+    raise ArgumentError, 'money must be non-negative' if new_money < 0
+
     @money = new_money
   end
 end

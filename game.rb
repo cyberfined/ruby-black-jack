@@ -1,12 +1,12 @@
-require_relative("game_actions")
-require_relative("player")
-require_relative("dealer")
-require_relative("deck")
-require_relative("card")
+require_relative('game_actions')
+require_relative('player')
+require_relative('dealer')
+require_relative('deck')
+require_relative('card')
 
 class Game
   RATE_SIZE     = 10
-  BANK_SIZE     = 2*RATE_SIZE
+  BANK_SIZE     = 2 * RATE_SIZE
   START_CAPITAL = 100
 
   def initialize(ui)
@@ -19,16 +19,16 @@ class Game
 
     # all allowed actions
     @actions = {
-      GameActions::PASS_ACTION       => method(:pass_action),
-      GameActions::GET_CARD_ACTION   => method(:get_card_action),
-      GameActions::OPEN_CARDS_ACTION => method(:open_cards_action),
+      GameActions::PASS_ACTION => method(:pass_action),
+      GameActions::GET_CARD_ACTION => method(:get_card_action),
+      GameActions::OPEN_CARDS_ACTION => method(:open_cards_action)
     }
   end
 
   def game_loop
     loop do
       new_game
-      
+
       # main game loop
       until @should_end_round
         player_turn
@@ -40,7 +40,7 @@ class Game
       break unless summarize_game
     end
 
-    @ui.show_message("Goodbye!")
+    @ui.show_message('Goodbye!')
   end
 
   private
@@ -58,11 +58,11 @@ class Game
     @ui.should_hide_dealer_info = false
     @ui.refresh
 
-    player_delta = @player.points-21
-    dealer_delta = @dealer.points-21
+    player_delta = @player.points - 21
+    dealer_delta = @dealer.points - 21
 
     if player_delta == dealer_delta
-      caption = "You have a draw, do you want to restart"
+      caption = 'You have a draw, do you want to restart'
       @player.money += RATE_SIZE
       @dealer.money += RATE_SIZE
     else
@@ -80,7 +80,7 @@ class Game
   end
 
   def create_players
-    player_name = @ui.dialog("Enter your name: ")
+    player_name = @ui.dialog('Enter your name: ')
     @player = Player.new(player_name, START_CAPITAL)
     @dealer = Dealer.new(START_CAPITAL)
   rescue ArgumentError => e
@@ -91,14 +91,14 @@ class Game
   def make_rates
     @player.money -= RATE_SIZE
     @dealer.money -= RATE_SIZE
-  rescue
+  rescue StandardError
     @player.money = START_CAPITAL
     @dealer.money = START_CAPITAL
   end
 
   def player_turn
     loop do
-      turn = @ui.choice_dialog("Your next action is:", GameActions::ACTIONS)
+      turn = @ui.choice_dialog('Your next action is:', GameActions::ACTIONS)
       break if action_call(@player, turn)
     end
   end
@@ -110,20 +110,20 @@ class Game
 
   def action_call(player, turn)
     action = @actions[turn]
-    if action == nil
+    if action.nil?
       @ui.show_message("undefined action #{turn}")
       return false
     end
     action.call(player)
   end
 
-  def pass_action(player)
+  def pass_action(_player)
     true
   end
 
   def get_card_action(player)
     if player.cards.length >= 3
-      @ui.show_message("#{player.name} can't get one more card") 
+      @ui.show_message("#{player.name} can't get one more card")
       return false
     end
 
@@ -131,7 +131,7 @@ class Game
     true
   end
 
-  def open_cards_action(dummy)
+  def open_cards_action(_dummy)
     @should_end_round = true
   end
 
