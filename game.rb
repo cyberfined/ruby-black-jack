@@ -127,7 +127,7 @@ class Game
       return false
     end
 
-    player.append_card(@deck.get_cards(1)[0])
+    player.cards << @deck.get_cards(1)[0]
     true
   end
 
